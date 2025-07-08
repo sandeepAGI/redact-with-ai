@@ -18,8 +18,8 @@ ollama serve &
 sleep 5
 
 # Pull required model
-echo "Pulling Llama 3 8B Instruct model..."
-ollama pull llama3:8b-instruct
+echo "Pulling Llama 3 8B model..."
+ollama pull llama3:8b
 
 # Install Python dependencies
 echo "Installing Python dependencies..."

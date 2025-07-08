@@ -24,8 +24,8 @@ class ScoringSystem:
             # Calculate reconstruction resistance score
             resistance_score = self.calculate_reconstruction_resistance_score(reconstruction_results)
             
-            # Calculate strategic value preservation score
-            strategic_score = self.calculate_strategic_value_score(strategic_value_results)
+            # Get strategic value score (already calculated and passed in)
+            strategic_score = strategic_value_results.get('strategic_value', 0.0)
             
             # Calculate overall weighted score
             overall_score = (

@@ -116,7 +116,7 @@ def extract_entities_spacy(text: str) -> Dict[str, List[str]]:
     Extract entities using spaCy
     """
     try:
-        nlp = spacy.load("en_core_web_lg")
+        nlp = spacy.load("en_core_web_sm")
         doc = nlp(text)
         
         entities = {

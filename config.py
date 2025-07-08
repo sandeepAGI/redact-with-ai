@@ -5,7 +5,7 @@ Configuration settings for the Legal Document Anonymization Tool
 # Ollama Configuration
 OLLAMA_CONFIG = {
     "endpoint": "http://localhost:11434",
-    "model": "llama3:8b-instruct",
+    "model": "llama3:8b",
     "temperature": 0.3,
     "max_tokens": 4096,
     "top_p": 0.9,

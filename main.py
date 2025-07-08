@@ -51,6 +51,55 @@ page = st.sidebar.selectbox(
     ["Upload", "Anonymize", "Test", "Results"]
 )
 
+# Instructions
+st.sidebar.subheader("📋 How to Use")
+st.sidebar.markdown("""
+**Step 1: Upload** 📄
+- Upload your legal document (PDF, DOCX, TXT)
+- Max file size: 50MB
+- Review document preview
+
+**Step 2: Anonymize** 🔒
+- Choose anonymization strategy:
+  - **Traditional**: Complete redaction
+  - **Strategic**: Preserve legal insights
+  - **Educational**: Abstract principles
+  - **Custom**: Your own guidelines
+- Process document chunks
+- Download anonymized text
+
+**Step 3: Test** 🧪
+- Run security tests on anonymized text
+- 5-category resistance analysis
+- Adversarial reconstruction testing
+
+**Step 4: Results** 📊
+- View comprehensive quality scores
+- Export detailed reports
+- Review anonymization effectiveness
+""")
+
+# Current document status
+st.sidebar.subheader("📄 Current Document")
+if st.session_state.current_document:
+    st.sidebar.info(f"**Selected:** {st.session_state.current_document}")
+    
+    # Show status indicators
+    has_anonymization = st.session_state.current_document in st.session_state.anonymization_results
+    has_testing = st.session_state.current_document in st.session_state.test_results
+    
+    if has_anonymization:
+        st.sidebar.success("✅ Anonymized")
+    else:
+        st.sidebar.warning("⚠️ Not anonymized")
+    
+    if has_testing:
+        st.sidebar.success("✅ Tested")
+    else:
+        st.sidebar.warning("⚠️ Not tested")
+else:
+    st.sidebar.warning("No document selected")
+
 # Connection status
 st.sidebar.subheader("System Status")
 with st.sidebar:
@@ -241,6 +290,54 @@ elif page == "Anonymize":
                             st.subheader("Anonymized")
                             st.text_area("", result['anonymized_text'][:1000] + "..." if len(result['anonymized_text']) > 1000 else result['anonymized_text'], height=300, key="anonymized")
                         
+                        # Download options
+                        st.subheader("📥 Download Options")
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            # Download anonymized text
+                            st.download_button(
+                                label="📄 Download Anonymized Text",
+                                data=result['anonymized_text'],
+                                file_name=f"{st.session_state.current_document}_anonymized.txt",
+                                mime="text/plain"
+                            )
+                        
+                        with col2:
+                            # Download full results as JSON
+                            import json
+                            full_results = {
+                                "document_name": st.session_state.current_document,
+                                "strategy": result['strategy'],
+                                "original_text": doc_data['text'],
+                                "anonymized_text": result['anonymized_text'],
+                                "processing_stats": {
+                                    "chunks_processed": result['chunks_processed'],
+                                    "total_tokens": result['total_tokens'],
+                                    "processing_time": result['total_processing_time']
+                                },
+                                "timestamp": result.get('timestamp', 'N/A')
+                            }
+                            
+                            st.download_button(
+                                label="📊 Download Full Report (JSON)",
+                                data=json.dumps(full_results, indent=2),
+                                file_name=f"{st.session_state.current_document}_full_report.json",
+                                mime="application/json"
+                            )
+                        
+                        with col3:
+                            # View full anonymized text
+                            if st.button("👁️ View Full Anonymized Text"):
+                                st.session_state.show_full_text = True
+                        
+                        # Show full text if requested
+                        if st.session_state.get('show_full_text', False):
+                            st.subheader("📄 Complete Anonymized Document")
+                            st.text_area("Full Anonymized Text", result['anonymized_text'], height=400, key="full_anonymized")
+                            if st.button("Hide Full Text"):
+                                st.session_state.show_full_text = False
+                        
                         # Failed chunks
                         if result['failed_chunks']:
                             st.warning(f"⚠️ {len(result['failed_chunks'])} chunks failed to process")
@@ -408,6 +505,11 @@ elif page == "Results":
                 test_result['test_results'],
                 {'strategic_value': strategic_score}
             )
+            
+            # Check if scoring was successful
+            if not overall_result.get('success', True):
+                st.error(f"Scoring failed: {overall_result.get('error', 'Unknown error')}")
+                st.stop()
             
             # Display comprehensive results
             st.subheader("📈 Comprehensive Score Summary")
